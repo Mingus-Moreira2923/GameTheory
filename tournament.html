@@ -1,1 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tournament | Game Theory Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <style>
+    :root{--bg-primary:#fff;--bg-secondary:#f8f9fa;--bg-tertiary:#f1f3f5;--text-primary:#1a1a1a;--text-secondary:#6b7280;--text-tertiary:#9ca3af;--accent:#2563eb;--accent-hover:#1d4ed8;--border:#e5e7eb;--success:#10b981;--warning:#f59e0b;--error:#ef4444;--shadow:0 1px 3px rgba(0,0,0,0.05);--shadow-lg:0 10px 25px rgba(0,0,0,0.08)}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-secondary);color:var(--text-primary);line-height:1.6;-webkit-font-smoothing:antialiased}
+    .header{background:var(--bg-primary);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+    .header-content{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px}
+    .logo{font-size:1.125rem;font-weight:600;color:var(--text-primary);text-decoration:none;letter-spacing:-0.025em}
+    .nav{display:flex;gap:2rem;align-items:center}
+    .nav-link{color:var(--text-secondary);text-decoration:none;font-size:0.9375rem;font-weight:500;transition:color 0.15s}
+    .nav-link:hover{color:var(--text-primary)}
+    .nav-link.active{color:var(--accent)}
+    .container{max-width:1400px;margin:0 auto;padding:2rem}
+    .page-header{margin-bottom:2rem}
+    .page-title{font-size:1.875rem;font-weight:700;letter-spacing:-0.025em;margin-bottom:0.5rem}
+    .page-description{font-size:1rem;color:var(--text-secondary)}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+    @media(max-width:1024px){.grid-2{grid-template-columns:1fr}}
+    .panel{background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin-bottom:1.5rem}
+    .panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+    .panel-title{font-size:1.125rem;font-weight:600}
+    .form-group{margin-bottom:1.25rem}
+    .form-label{display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.5rem;color:var(--text-primary)}
+    .form-input,.form-select{width:100%;padding:0.625rem 0.875rem;border:1px solid var(--border);border-radius:6px;font-size:0.9375rem;font-family:inherit;transition:border-color 0.15s,box-shadow 0.15s}
+    .form-input:focus,.form-select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:0.625rem 1.25rem;font-size:0.9375rem;font-weight:500;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;text-decoration:none}
+    .btn-primary{background:var(--accent);color:white}
+    .btn-primary:hover{background:var(--accent-hover)}
+    .btn-secondary{background:transparent;color:var(--text-primary);border:1px solid var(--border)}
+    .btn-secondary:hover{background:var(--bg-tertiary)}
+    .btn-success{background:var(--success);color:white}
+    .btn-group{display:flex;gap:0.5rem;flex-wrap:wrap}
+    .participant-item{background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:0.875rem 1rem;margin-bottom:0.5rem;display:flex;align-items:center;justify-content:space-between}
+    .participant-name{font-weight:500;font-size:0.9375rem}
+    .btn-sm{padding:0.375rem 0.75rem;font-size:0.8125rem}
+    .info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:1rem;font-size:0.875rem;color:#1e40af;margin-bottom:1.25rem}
+    .success-box{background:#d1fae5;border:1px solid #6ee7b7;border-radius:6px;padding:1rem;font-size:0.875rem;color:#065f46;margin-bottom:1.25rem}
+    .warning-box{background:#fef3c7;border:1px solid #fde68a;border-radius:6px;padding:1rem;font-size:0.875rem;color:#92400e;margin-bottom:1.25rem}
+    .progress-bar{width:100%;height:8px;background:var(--bg-tertiary);border-radius:4px;overflow:hidden;margin-bottom:1rem}
+    .progress-fill{height:100%;background:var(--accent);transition:width 0.3s}
+    .result-card{background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:1rem;margin-bottom:0.75rem}
+    .result-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem}
+    .result-label{font-size:0.9375rem;font-weight:500}
+    .result-value{font-size:1.5rem;font-weight:700}
+    table{width:100%;border-collapse:collapse}
+    table th,table td{padding:0.75rem;text-align:left;border-bottom:1px solid var(--border)}
+    table th{font-weight:600;font-size:0.875rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em}
+    .standings-rank{font-weight:700;color:var(--accent)}
+    .chart-container{position:relative;height:300px;margin-bottom:1rem}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="index.html" class="logo">G Theory</a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Dashboard</a>
+        <a href="strategies.html" class="nav-link">Strategies</a>
+        <a href="tournament.html" class="nav-link active">Tournament</a>
+        <a href="analysis.html" class="nav-link">Analysis</a>
+        <a href="documentation.html" class="nav-link">Documentation</a>
+      </nav>
+    </div>
+  </header>
 
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">Tournament Runner</h1>
+      <p class="page-description">Configure and execute game theory tournaments with deterministic reproducibility</p>
+    </div>
+
+    <div id="setupView">
+      <div class="grid-2">
+        <div>
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Participants</h2>
+              <button class="btn btn-secondary btn-sm" id="selectAllBtn">Select All</button>
+            </div>
+            <div id="participantsList"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Tournament Configuration</h2>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Format</label>
+              <select class="form-select" id="format">
+                <option value="round-robin">Round Robin</option>
+                <option value="single-elimination">Single Elimination</option>
+                <option value="double-elimination">Double Elimination</option>
+                <option value="swiss">Swiss System</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Rounds per Match</label>
+              <input type="number" class="form-input" id="rounds" value="200" min="1" max="10000">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Noise Level (%)</label>
+              <input type="range" class="form-input" id="noise" value="0" min="0" max="50" step="1">
+              <small style="color:var(--text-secondary)">Current: <span id="noiseValue">0</span>%</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Random Seed</label>
+              <input type="text" class="form-input" id="seed" placeholder="Leave empty for random">
+              <small style="color:var(--text-secondary)">For deterministic reproducibility</small>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                <input type="checkbox" id="usePRNG" checked> Use Deterministic PRNG
+              </label>
+            </div>
+
+            <button class="btn btn-success" id="startTournamentBtn" style="width:100%">Start Tournament</button>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Payoff Matrix</h2>
+            </div>
+            <table>
+              <tr><th></th><th>Cooperate</th><th>Defect</th></tr>
+              <tr><th>Cooperate</th><td><input type="number" class="form-input" id="cc" value="3" style="width:60px"></td><td><input type="number" class="form-input" id="cd" value="0" style="width:60px"></td></tr>
+              <tr><th>Defect</th><td><input type="number" class="form-input" id="dc" value="5" style="width:60px"></td><td><input type="number" class="form-input" id="dd" value="1" style="width:60px"></td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="runningView" style="display:none">
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Tournament in Progress</h2>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div style="text-align:center;color:var(--text-secondary);margin-bottom:1rem">
+          <span id="progressText">0 / 0 matches completed</span>
+        </div>
+        <button class="btn btn-secondary" id="cancelBtn">Cancel Tournament</button>
+      </div>
+    </div>
+
+    <div id="resultsView" style="display:none">
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Tournament Results</h2>
+          <div class="btn-group">
+            <button class="btn btn-secondary btn-sm" id="exportCsvBtn">Export CSV</button>
+            <button class="btn btn-secondary btn-sm" id="exportJsonBtn">Export JSON</button>
+            <button class="btn btn-primary btn-sm" id="analyzeBtn">Analyze</button>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <h3 style="margin-bottom:1rem;font-size:1rem;font-weight:600">Final Standings</h3>
+            <div id="standingsTable"></div>
+          </div>
+          <div>
+            <h3 style="margin-bottom:1rem;font-size:1rem;font-weight:600">Performance Chart</h3>
+            <div class="chart-container">
+              <canvas id="resultsChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:1.5rem">
+          <h3 style="margin-bottom:1rem;font-size:1rem;font-weight:600">Match Results</h3>
+          <div id="matchResults"></div>
+        </div>
+
+        <button class="btn btn-primary" id="newTournamentBtn">New Tournament</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let AppState = {
+      strategies: JSON.parse(localStorage.getItem('pd_strategies_v2') || '[]'),
+      selectedStrategies: [],
+      tournamentData: null,
+      running: false,
+      cancelled: false
+    };
+
+    let resultsChart = null;
+
+    function init() {
+      renderParticipants();
+      setupEventListeners();
+    }
+
+    function renderParticipants() {
+      const list = document.getElementById('participantsList');
+      if (AppState.strategies.length === 0) {
+        list.innerHTML = '<div class="info-box">No strategies available. Create strategies first on the Strategies page.</div>';
+        return;
+      }
+
+      list.innerHTML = AppState.strategies.map((s, i) => `
+        <div class="participant-item">
+          <label style="display:flex;align-items:center;cursor:pointer;flex:1">
+            <input type="checkbox" class="strategy-checkbox" data-index="${i}" style="margin-right:0.75rem">
+            <span class="participant-name">${escapeHTML(s.name)}</span>
+          </label>
+        </div>
+      `).join('');
+    }
+
+    function setupEventListeners() {
+      document.getElementById('noise').addEventListener('input', e => {
+        document.getElementById('noiseValue').textContent = e.target.value;
+      });
+
+      document.getElementById('selectAllBtn').addEventListener('click', () => {
+        document.querySelectorAll('.strategy-checkbox').forEach(cb => cb.checked = true);
+      });
+
+      document.getElementById('startTournamentBtn').addEventListener('click', startTournament);
+      document.getElementById('cancelBtn').addEventListener('click', cancelTournament);
+      document.getElementById('newTournamentBtn').addEventListener('click', resetTournament);
+      document.getElementById('exportCsvBtn').addEventListener('click', exportCsv);
+      document.getElementById('exportJsonBtn').addEventListener('click', exportJson);
+      document.getElementById('analyzeBtn').addEventListener('click', () => {
+        localStorage.setItem('pd_latest_tournament', JSON.stringify(AppState.tournamentData));
+        window.location.href = 'analysis.html';
+      });
+    }
+
+    async function startTournament() {
+      const selected = Array.from(document.querySelectorAll('.strategy-checkbox:checked')).map(cb => 
+        parseInt(cb.dataset.index)
+      );
+
+      if (selected.length < 2) {
+        alert('Please select at least 2 strategies');
+        return;
+      }
+
+      AppState.selectedStrategies = selected.map(i => AppState.strategies[i]);
+      AppState.running = true;
+      AppState.cancelled = false;
+
+      document.getElementById('setupView').style.display = 'none';
+      document.getElementById('runningView').style.display = 'block';
+
+      const config = {
+        format: document.getElementById('format').value,
+        rounds: parseInt(document.getElementById('rounds').value),
+        noise: parseInt(document.getElementById('noise').value),
+        seed: document.getElementById('seed').value || null,
+        usePRNG: document.getElementById('usePRNG').checked,
+        payoff: {
+          cc: parseInt(document.getElementById('cc').value),
+          cd: parseInt(document.getElementById('cd').value),
+          dc: parseInt(document.getElementById('dc').value),
+          dd: parseInt(document.getElementById('dd').value)
+        }
+      };
+
+      try {
+        const results = await runTournament(config);
+        if (!AppState.cancelled) {
+          AppState.tournamentData = results;
+          showResults();
+          saveTournamentHistory(results);
+        }
+      } catch (e) {
+        alert('Tournament failed: ' + e.message);
+        resetTournament();
+      }
+
+      AppState.running = false;
+    }
+
+    function cancelTournament() {
+      AppState.cancelled = true;
+      AppState.running = false;
+      resetTournament();
+    }
+
+    function resetTournament() {
+      document.getElementById('setupView').style.display = 'block';
+      document.getElementById('runningView').style.display = 'none';
+      document.getElementById('resultsView').style.display = 'none';
+      AppState.tournamentData = null;
+    }
+
+    async function runTournament(config) {
+      const strategies = AppState.selectedStrategies;
+      const matches = [];
+      let totalMatches = 0;
+
+      if (config.format === 'round-robin') {
+        for (let i = 0; i < strategies.length; i++) {
+          for (let j = i + 1; j < strategies.length; j++) {
+            matches.push([i, j]);
+          }
+        }
+        totalMatches = matches.length;
+      }
+
+      const rngFunc = config.usePRNG && config.seed ? Math.seedrandom(config.seed) : Math.random;
+      const results = [];
+      let completed = 0;
+
+      for (const [i, j] of matches) {
+        if (AppState.cancelled) break;
+
+        const result = await playMatch(
+          strategies[i],
+          strategies[j],
+          config.rounds,
+          config.noise,
+          config.payoff,
+          rngFunc
+        );
+
+        results.push({
+          player1: strategies[i].name,
+          player2: strategies[j].name,
+          scores: result.scores,
+          history: result.history
+        });
+
+        completed++;
+        updateProgress(completed, totalMatches);
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+
+      return {
+        timestamp: new Date().toISOString(),
+        runId: generateId(),
+        format: config.format,
+        rounds: config.rounds,
+        noise: config.noise,
+        seed: config.seed,
+        usePRNG: config.usePRNG,
+        participants: strategies.map(s => ({ name: s.name })),
+        results: results
+      };
+    }
+
+    async function playMatch(s1, s2, rounds, noise, payoff, rng) {
+      const fn1 = createStrategyFunction(s1.code);
+      const fn2 = createStrategyFunction(s2.code);
+      
+      const history1 = [];
+      const history2 = [];
+      const scores = [0, 0];
+
+      for (let round = 1; round <= rounds; round++) {
+        let move1 = fn1(history1, history2, round, {});
+        let move2 = fn2(history2, history1, round, {});
+
+        if (noise > 0 && rng() * 100 < noise) {
+          move1 = move1 === 'C' ? 'D' : 'C';
+        }
+        if (noise > 0 && rng() * 100 < noise) {
+          move2 = move2 === 'C' ? 'D' : 'C';
+        }
+
+        history1.push(move1);
+        history2.push(move2);
+
+        if (move1 === 'C' && move2 === 'C') {
+          scores[0] += payoff.cc;
+          scores[1] += payoff.cc;
+        } else if (move1 === 'C' && move2 === 'D') {
+          scores[0] += payoff.cd;
+          scores[1] += payoff.dc;
+        } else if (move1 === 'D' && move2 === 'C') {
+          scores[0] += payoff.dc;
+          scores[1] += payoff.cd;
+        } else {
+          scores[0] += payoff.dd;
+          scores[1] += payoff.dd;
+        }
+      }
+
+      return { scores, history: [history1, history2] };
+    }
+
+    function createStrategyFunction(code) {
+      try {
+        return new Function('return (' + code + ')')();
+      } catch (e) {
+        console.error('Failed to create strategy function:', e);
+        return () => 'C';
+      }
+    }
+
+    function updateProgress(completed, total) {
+      const percent = (completed / total) * 100;
+      document.getElementById('progressFill').style.width = percent + '%';
+      document.getElementById('progressText').textContent = `${completed} / ${total} matches completed`;
+    }
+
+    function showResults() {
+      document.getElementById('runningView').style.display = 'none';
+      document.getElementById('resultsView').style.display = 'block';
+
+      const standings = calculateStandings();
+      renderStandings(standings);
+      renderMatches();
+      renderChart(standings);
+    }
+
+    function calculateStandings() {
+      const standings = {};
+      AppState.tournamentData.participants.forEach(p => {
+        standings[p.name] = { total: 0, wins: 0, losses: 0, draws: 0 };
+      });
+
+      AppState.tournamentData.results.forEach(r => {
+        standings[r.player1].total += r.scores[0];
+        standings[r.player2].total += r.scores[1];
+
+        if (r.scores[0] > r.scores[1]) {
+          standings[r.player1].wins++;
+          standings[r.player2].losses++;
+        } else if (r.scores[0] < r.scores[1]) {
+          standings[r.player2].wins++;
+          standings[r.player1].losses++;
+        } else {
+          standings[r.player1].draws++;
+          standings[r.player2].draws++;
+        }
+      });
+
+      return Object.entries(standings).sort((a, b) => b[1].total - a[1].total);
+    }
+
+    function renderStandings(standings) {
+      const table = document.getElementById('standingsTable');
+      table.innerHTML = `
+        <table>
+          <thead>
+            <tr><th>Rank</th><th>Strategy</th><th>Score</th><th>W-L-D</th></tr>
+          </thead>
+          <tbody>
+            ${standings.map((s, i) => `
+              <tr>
+                <td class="standings-rank">${i + 1}</td>
+                <td>${escapeHTML(s[0])}</td>
+                <td>${s[1].total}</td>
+                <td>${s[1].wins}-${s[1].losses}-${s[1].draws}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderMatches() {
+      const container = document.getElementById('matchResults');
+      container.innerHTML = AppState.tournamentData.results.map(r => `
+        <div class="result-card">
+          <div class="result-row">
+            <span>${escapeHTML(r.player1)}</span>
+            <span style="font-weight:700">${r.scores[0]} - ${r.scores[1]}</span>
+            <span>${escapeHTML(r.player2)}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderChart(standings) {
+      const ctx = document.getElementById('resultsChart').getContext('2d');
+      
+      if (resultsChart) {
+        resultsChart.destroy();
+      }
+
+      resultsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: standings.map(s => s[0]),
+          datasets: [{
+            label: 'Total Score',
+            data: standings.map(s => s[1].total),
+            backgroundColor: '#2563eb'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    function saveTournamentHistory(data) {
+      let history = JSON.parse(localStorage.getItem('pd_tournament_history') || '[]');
+      history.push(data);
+      if (history.length > 50) history = history.slice(-50);
+      localStorage.setItem('pd_tournament_history', JSON.stringify(history));
+
+      let analytics = JSON.parse(localStorage.getItem('pd_analytics') || '{"totalMatches":0,"totalDataPoints":0}');
+      analytics.totalMatches = (analytics.totalMatches || 0) + data.results.length;
+      analytics.totalDataPoints = (analytics.totalDataPoints || 0) + (data.results.length * data.rounds * 2);
+      localStorage.setItem('pd_analytics', JSON.stringify(analytics));
+    }
+
+    function exportCsv() {
+      let csv = 'Player1,Player2,Score1,Score2,Rounds\n';
+      AppState.tournamentData.results.forEach(r => {
+        csv += `${escapeCSV(r.player1)},${escapeCSV(r.player2)},${r.scores[0]},${r.scores[1]},${AppState.tournamentData.rounds}\n`;
+      });
+      download(csv, 'tournament.csv', 'text/csv');
+    }
+
+    function exportJson() {
+      const data = JSON.stringify(AppState.tournamentData, null, 2);
+      download(data, 'tournament.json', 'application/json');
+    }
+
+    function download(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function generateId() {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function escapeCSV(str) {
+      return '"' + String(str).replace(/"/g, '""') + '"';
+    }
+
+    init();
+  </script>
+</body>
+</html>
