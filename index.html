@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G Theory - Interactive Game Theory Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --white: #ffffff;
+      --black: #000000;
+      --gray-50: #fafafa;
+      --gray-100: #f5f5f5;
+      --gray-200: #e5e5e5;
+      --gray-300: #d4d4d4;
+      --gray-400: #a3a3a3;
+      --gray-500: #737373;
+      --gray-600: #525252;
+      --gray-700: #404040;
+      --gray-800: #262626;
+      --gray-900: #171717;
+      --blue-600: #2563eb;
+      --blue-700: #1d4ed8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--white);
+      color: var(--gray-900);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 1000;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .nav-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      color: var(--black);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: var(--gray-600);
+      text-decoration: none;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--black);
+    }
+
+    .nav-cta {
+      background: var(--black);
+      color: var(--white);
+      padding: 0.625rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9375rem;
+      transition: background 0.2s;
+    }
+
+    .nav-cta:hover {
+      background: var(--gray-800);
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.03), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      max-width: 900px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: var(--gray-100);
+      border-radius: 50px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.025em;
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      color: var(--black);
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.125rem, 2vw, 1.5rem);
+      color: var(--gray-600);
+      line-height: 1.6;
+      margin-bottom: 2.5rem;
+      font-weight: 400;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--black);
+      color: var(--white);
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+      background: var(--gray-800);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--black);
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      border: 2px solid var(--gray-300);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--black);
+      transform: translateY(-2px);
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--gray-500);
+      font-size: 0.875rem;
+      font-weight: 500;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(10px); }
+    }
+
+    /* Game Sections */
+    .game-section {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 4rem 2rem;
+      position: relative;
+    }
+
+    .game-section:nth-child(even) {
+      background: var(--gray-50);
+    }
+
+    .game-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      width: 100%;
+    }
+
+    .game-section:nth-child(even) .game-content {
+      direction: rtl;
+    }
+
+    .game-section:nth-child(even) .game-text {
+      direction: ltr;
+    }
+
+    .game-section:nth-child(even) .game-visual {
+      direction: ltr;
+    }
+
+    .game-text {
+      padding: 2rem 0;
+    }
+
+    .game-number {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--blue-600);
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+
+    .game-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+      color: var(--black);
+    }
+
+    .game-description {
+      font-size: 1.125rem;
+      color: var(--gray-600);
+      line-height: 1.8;
+      margin-bottom: 2rem;
+    }
+
+    .game-features {
+      list-style: none;
+      margin-bottom: 2rem;
+    }
+
+    .game-features li {
+      padding: 0.75rem 0;
+      color: var(--gray-700);
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .game-features li::before {
+      content: '✓';
+      color: var(--blue-600);
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+
+    .game-visual {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 3rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-section:nth-child(even) .game-visual {
+      background: var(--white);
+    }
+
+    .visual-placeholder {
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      color: var(--gray-400);
+    }
+
+    /* Matrix Visualization */
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .matrix-cell {
+      background: var(--gray-100);
+      padding: 2rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .matrix-label {
+      font-size: 0.875rem;
+      color: var(--gray-600);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .matrix-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--black);
+    }
+
+    /* Stats Section */
+    .stats-section {
+      padding: 6rem 2rem;
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .stats-content {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 3rem;
+      text-align: center;
+    }
+
+    .stat-item {
+      padding: 2rem 0;
+    }
+
+    .stat-number {
+      font-size: 4rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 1.125rem;
+      color: var(--gray-400);
+      font-weight: 500;
+    }
+
+    /* Footer */
+    .footer {
+      background: var(--gray-900);
+      color: var(--gray-400);
+      padding: 4rem 2rem 2rem;
+    }
+
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 3rem;
+      margin-bottom: 3rem;
+    }
+
+    .footer-brand {
+      color: var(--white);
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+
+    .footer-desc {
+      color: var(--gray-500);
+      line-height: 1.6;
+    }
+
+    .footer-title {
+      color: var(--white);
+      font-weight: 600;
+      margin-bottom: 1rem;
+      font-size: 0.9375rem;
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 0.75rem;
+    }
+
+    .footer-links a {
+      color: var(--gray-500);
+      text-decoration: none;
+      font-size: 0.9375rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--white);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid var(--gray-800);
+      padding-top: 2rem;
+      text-align: center;
+      color: var(--gray-600);
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 1024px) {
+      .game-content {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+
+      .game-section:nth-child(even) .game-content {
+        direction: ltr;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Smooth animations */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s, transform 0.6s;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-content">
+      <a href="#" class="logo">G Theory</a>
+      <div class="nav-links">
+        <a href="#games" class="nav-link">Games</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#research" class="nav-link">Research</a>
+        <a href="index.html" class="nav-cta">Platform →</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">INTERACTIVE GAME THEORY</div>
+      <h1 class="hero-title">Explore the Mathematics of Decision-Making</h1>
+      <p class="hero-subtitle">
+        Experience classic game theory scenarios through interactive simulations. 
+        Learn strategic thinking, understand Nash equilibria, and discover how rational agents interact.
+      </p>
+      <div class="hero-buttons">
+        <a href="#games" class="btn-primary">
+          Explore Games ↓
+        </a>
+        <a href="index.html" class="btn-secondary">
+          Research Platform →
+        </a>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <span>Scroll to explore</span>
+      <span style="font-size: 1.5rem;">↓</span>
+    </div>
+  </section>
+
+  <!-- Game 1: Prisoner's Dilemma -->
+  <section id="games" class="game-section fade-in">
+    <div class="game-content">
+      <div class="game-text">
+        <div class="game-number">GAME 01</div>
+        <h2 class="game-title">Prisoner's Dilemma</h2>
+        <p class="game-description">
+          The most famous game in game theory. Two suspects face a choice: cooperate with each other 
+          or betray. Individual rationality leads to collective irrationality.
+        </p>
+        <ul class="game-features">
+          <li>Build custom strategies using code or visual tools</li>
+          <li>Run tournaments with deterministic reproducibility</li>
+          <li>Analyze results with advanced statistical tools</li>
+          <li>Export data for research and publication</li>
+        </ul>
+        <a href="tournament.html" class="btn-primary">Play Now →</a>
+      </div>
+      <div class="game-visual">
+        <div class="matrix-grid">
+          <div class="matrix-cell">
+            <div class="matrix-label">Both Cooperate</div>
+            <div class="matrix-value">3, 3</div>
+          </div>
+          <div class="matrix-cell">
+            <div class="matrix-label">You Defect</div>
+            <div class="matrix-value">5, 0</div>
+          </div>
+          <div class="matrix-cell">
+            <div class="matrix-label">They Defect</div>
+            <div class="matrix-value">0, 5</div>
+          </div>
+          <div class="matrix-cell">
+            <div class="matrix-label">Both Defect</div>
+            <div class="matrix-value">1, 1</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game 2: Ultimatum Game -->
+  <section class="game-section fade-in">
+    <div class="game-content">
+      <div class="game-text">
+        <div class="game-number">GAME 02</div>
+        <h2 class="game-title">Ultimatum Game</h2>
+        <p class="game-description">
+          One player proposes how to split a sum of money with another. The second player can 
+          accept or reject. If rejected, both get nothing. Tests fairness and rationality.
+        </p>
+        <ul class="game-features">
+          <li>Test theories of fairness and equity</li>
+          <li>Observe cross-cultural differences</li>
+          <li>Analyze rejection thresholds</li>
+          <li>Study behavioral economics principles</li>
+        </ul>
+        <a href="#" class="btn-primary">Coming Soon</a>
+      </div>
+      <div class="game-visual">
+        <div><img src = "https://lh6.googleusercontent.com/j4CAd82aQ9pUPhtw7lWfzf66Mozl0UkhqpOnAiiyNkYO-DrX14PUmlFvwmX1D_cIAOAglpafITMo6oqjve-RJs_RVMnKMe9_AaXp9JxfHZ2-G5So26GDz_7PR8WprbwIZh3f4b85UbPYys1ylxc5n70"/> </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game 3: Trust Game -->
+  <section class="game-section fade-in">
+    <div class="game-content">
+      <div class="game-text">
+        <div class="game-number">GAME 03</div>
+        <h2 class="game-title">Trust Game</h2>
+        <p class="game-description">
+          Player 1 decides how much money to send to Player 2. The amount is multiplied, and 
+          Player 2 decides how much to send back. A fundamental study of trust and reciprocity.
+        </p>
+        <ul class="game-features">
+          <li>Measure trust and trustworthiness</li>
+          <li>Study reciprocity dynamics</li>
+          <li>Explore social preferences</li>
+          <li>Analyze repeated interactions</li>
+        </ul>
+        <a href="#" class="btn-primary">Coming Soon</a>
+      </div>
+      <div class="game-visual">
+        <div class="visual-placeholder">🤝</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game 4: Public Goods Game -->
+  <section class="game-section fade-in">
+    <div class="game-content">
+      <div class="game-text">
+        <div class="game-number">GAME 04</div>
+        <h2 class="game-title">Public Goods Game</h2>
+        <p class="game-description">
+          Each player decides how much to contribute to a common pool. The total is multiplied 
+          and redistributed equally. Studies cooperation in groups and the free-rider problem.
+        </p>
+        <ul class="game-features">
+          <li>Multi-player strategic interactions</li>
+          <li>Study collective action problems</li>
+          <li>Analyze contribution patterns</li>
+          <li>Test punishment mechanisms</li>
+        </ul>
+        <a href="#" class="btn-primary">Coming Soon</a>
+      </div>
+      <div class="game-visual">
+        <div class="visual-placeholder">🌍</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game 5: Stag Hunt -->
+  <section class="game-section fade-in">
+    <div class="game-content">
+      <div class="game-text">
+        <div class="game-number">GAME 05</div>
+        <h2 class="game-title">Stag Hunt</h2>
+        <p class="game-description">
+          Players can hunt a stag together for a large reward, or hunt a hare alone for a smaller 
+          but guaranteed reward. Explores coordination and risk in social cooperation.
+        </p>
+        <ul class="game-features">
+          <li>Multiple Nash equilibria</li>
+          <li>Coordination problem analysis</li>
+          <li>Risk-dominant vs payoff-dominant strategies</li>
+          <li>Social contract theory applications</li>
+        </ul>
+        <a href="#" class="btn-primary">Coming Soon</a>
+      </div>
+      <div class="game-visual">
+        <div class="visual-placeholder">🦌</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game 6: Battle of the Sexes -->
+  <section class="game-section fade-in">
+    <div class="game-content">
+      <div class="game-text">
+        <div class="game-number">GAME 06</div>
+        <h2 class="game-title">Battle of the Sexes</h2>
+        <p class="game-description">
+          Two players prefer to coordinate on an activity, but each prefers a different activity. 
+          Classic coordination game with conflicting interests and multiple equilibria.
+        </p>
+        <ul class="game-features">
+          <li>Coordination with preference conflicts</li>
+          <li>Study bargaining and compromise</li>
+          <li>Multiple equilibria selection</li>
+          <li>Communication and commitment analysis</li>
+        </ul>
+        <a href="#" class="btn-primary">Coming Soon</a>
+      </div>
+      <div class="game-visual">
+        <div class="visual-placeholder">⚔️</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game 7: Chicken Game -->
+  <section class="game-section fade-in">
+    <div class="game-content">
+      <div class="game-text">
+        <div class="game-number">GAME 07</div>
+        <h2 class="game-title">Chicken Game</h2>
+        <p class="game-description">
+          Two players head toward each other. Each must choose to swerve or continue straight. 
+          Worst outcome is mutual destruction. Models brinkmanship and escalation dynamics.
+        </p>
+        <ul class="game-features">
+          <li>Anti-coordination game dynamics</li>
+          <li>Study commitment and credibility</li>
+          <li>Escalation and deterrence theory</li>
+          <li>Mixed strategy equilibria</li>
+        </ul>
+        <a href="#" class="btn-primary">Coming Soon</a>
+      </div>
+      <div class="game-visual">
+        <div class="visual-placeholder">🚗</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game 8: Hawk-Dove Game -->
+  <section class="game-section fade-in">
+    <div class="game-content">
+      <div class="game-text">
+        <div class="game-number">GAME 08</div>
+        <h2 class="game-title">Hawk-Dove Game</h2>
+        <p class="game-description">
+          Animals compete for a resource. Hawks fight, doves share. If two hawks fight, both get 
+          injured. Evolutionary game theory and the evolution of animal conflict.
+        </p>
+        <ul class="game-features">
+          <li>Evolutionary stable strategies</li>
+          <li>Population dynamics simulation</li>
+          <li>Cost-benefit analysis in conflict</li>
+          <li>Biological applications of game theory</li>
+        </ul>
+        <a href="#" class="btn-primary">Coming Soon</a>
+      </div>
+      <div class="game-visual">
+        <div class="visual-placeholder">🦅</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats-section">
+    <div class="stats-content">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number">8</div>
+          <div class="stat-label">Classic Games</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">∞</div>
+          <div class="stat-label">Strategy Combinations</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">100%</div>
+          <div class="stat-label">Reproducible Results</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">Available</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">G Theory</div>
+          <p class="footer-desc">
+            An interactive platform for exploring game theory concepts through hands-on simulations 
+            and research-grade analysis tools.
+          </p>
+        </div>
+        <div>
+          <div class="footer-title">Games</div>
+          <ul class="footer-links">
+            <li><a href="tournament.html">Prisoner's Dilemma</a></li>
+            <li><a href="#">Ultimatum Game</a></li>
+            <li><a href="#">Trust Game</a></li>
+            <li><a href="#">Public Goods</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title">Platform</div>
+          <ul class="footer-links">
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="tournament.html">Tournament</a></li>
+            <li><a href="analysis.html">Analysis</a></li>
+            <li><a href="documentation.html">Documentation</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title">Resources</div>
+          <ul class="footer-links">
+            <li><a href="#">Research Papers</a></li>
+            <li><a href="#">API Documentation</a></li>
+            <li><a href="#">Tutorials</a></li>
+            <li><a href="#">About</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        © 2025 G Theory. Built for researchers, students, and game theory enthusiasts.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Smooth scroll reveal animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.fade-in').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Smooth navigation
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
