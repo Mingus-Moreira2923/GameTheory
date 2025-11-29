@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Strategy Development | Game Theory Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/material-darker.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --bg-tertiary: #f1f3f5;
+      --text-primary: #1a1a1a;
+      --text-secondary: #6b7280;
+      --text-tertiary: #9ca3af;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .logo {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-decoration: none;
+      letter-spacing: -0.025em;
+    }
+
+    .nav {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+    }
+
+    .nav-link.active {
+      color: var(--accent);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-description {
+      font-size: 1rem;
+      color: var(--text-secondary);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 0.625rem 0.875rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9375rem;
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.875rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .btn-danger {
+      background: var(--error);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .strategy-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      transition: box-shadow 0.15s;
+    }
+
+    .strategy-card:hover {
+      box-shadow: var(--shadow);
+    }
+
+    .strategy-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .strategy-name {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .strategy-meta {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    .strategy-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-sm {
+      padding: 0.375rem 0.75rem;
+      font-size: 0.8125rem;
+    }
+
+    .code-editor-wrapper {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .CodeMirror {
+      height: 300px;
+      font-size: 0.875rem;
+    }
+
+    .param-item {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .param-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .param-name {
+      font-weight: 500;
+      font-size: 0.9375rem;
+    }
+
+    .param-type {
+      font-size: 0.8125rem;
+      padding: 0.25rem 0.5rem;
+      background: var(--bg-primary);
+      border-radius: 4px;
+      color: var(--text-secondary);
+    }
+
+    .param-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .info-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 1rem;
+      font-size: 0.875rem;
+      color: #1e40af;
+      margin-bottom: 1.25rem;
+    }
+
+    .warning-box {
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      border-radius: 6px;
+      padding: 1rem;
+      font-size: 0.875rem;
+      color: #92400e;
+      margin-bottom: 1.25rem;
+    }
+
+    .success-box {
+      background: #d1fae5;
+      border: 1px solid #6ee7b7;
+      border-radius: 6px;
+      padding: 1rem;
+      font-size: 0.875rem;
+      color: #065f46;
+      margin-bottom: 1.25rem;
+    }
+
+    .error-box {
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      padding: 1rem;
+      font-size: 0.875rem;
+      color: #991b1b;
+      margin-bottom: 1.25rem;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .tab {
+      padding: 0.75rem 1.25rem;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .preset-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.875rem;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .preset-item:hover {
+      background: var(--bg-tertiary);
+    }
+
+    .preset-name {
+      font-weight: 500;
+      font-size: 0.9375rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .preset-description {
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+    }
+
+    .no-strategies {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-secondary);
+    }
+
+    .rule-item {
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      position: relative;
+    }
+
+    .rule-item.dragging {
+      opacity: 0.5;
+    }
+
+    .rule-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      cursor: move;
+    }
+
+    .rule-drag-handle {
+      font-size: 1.25rem;
+      color: var(--text-tertiary);
+      margin-right: 0.5rem;
+    }
+
+    .rule-title {
+      font-weight: 600;
+      font-size: 0.9375rem;
+      flex: 1;
+    }
+
+    .rule-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .condition-builder {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .condition-row {
+      display: grid;
+      grid-template-columns: 150px 120px 1fr auto;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .condition-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .logic-operator {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+
+    .action-selector {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.75rem;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      margin-top: 0.75rem;
+    }
+
+    .action-label {
+      font-weight: 500;
+      margin-right: 0.5rem;
+    }
+
+    .rule-group {
+      background: var(--bg-tertiary);
+      border: 2px dashed var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .group-logic {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .nested-rules {
+      margin-left: 1rem;
+      border-left: 2px solid var(--border);
+      padding-left: 1rem;
+    }
+
+    select.mini {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    input.mini {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .add-condition-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.375rem 0.75rem;
+      font-size: 0.8125rem;
+      background: transparent;
+      border: 1px dashed var(--border);
+      border-radius: 4px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .add-condition-btn:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .empty-rules {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-secondary);
+      border: 2px dashed var(--border);
+      border-radius: 6px;
+    }
+
+    .code-bg {
+      background: var(--bg-tertiary);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="index.html" class="logo">Game Theory Platform</a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Dashboard</a>
+        <a href="strategies.html" class="nav-link active">Strategies</a>
+        <a href="tournament.html" class="nav-link">Tournament</a>
+        <a href="analysis.html" class="nav-link">Analysis</a>
+        <a href="documentation.html" class="nav-link">Documentation</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">Strategy Development</h1>
+      <p class="page-description">Create, customize, and test sophisticated game theory strategies</p>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Strategy Editor</h2>
+            <div class="panel-actions">
+              <button class="btn btn-secondary btn-sm" id="newStrategyBtn">New</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Strategy Name</label>
+            <input type="text" class="form-input" id="strategyName" placeholder="Enter strategy name">
+          </div>
+
+          <div class="tabs">
+            <button class="tab active" data-tab="code">Code Editor</button>
+            <button class="tab" data-tab="visual">Visual Builder</button>
+            <button class="tab" data-tab="params">Parameters</button>
+          </div>
+
+          <div class="tab-content active" id="code-tab">
+            <div class="info-box">
+              Define your strategy as a JavaScript function. The function receives your history,
+              opponent's history, and current round number, and should return 'C' (cooperate) or 'D' (defect).
+            </div>
+
+            <div class="code-editor-wrapper">
+              <textarea id="codeEditor">function strategy(myHistory, oppHistory, round, params) {
+  // Example: *****-for-Tat strategy
+  if (round === 1) return 'C';
+  return oppHistory[oppHistory.length - 1] || 'C';
+}</textarea>
+            </div>
+
+            <div class="btn-group" style="margin-top: 1rem;">
+              <button class="btn btn-primary" id="saveStrategyBtn">Save Strategy</button>
+              <button class="btn btn-secondary" id="validateCodeBtn">Validate</button>
+              <button class="btn btn-secondary" id="testStrategyBtn">Quick Test</button>
+            </div>
+
+            <div id="codeStatus" style="margin-top: 1rem;"></div>
+          </div>
+
+          <div class="tab-content" id="visual-tab">
+            <div class="info-box">
+              Build strategies visually using conditional rules. Rules are evaluated top-to-bottom,
+              and the first matching rule determines the action. Drag rules to reorder. Supports unlimited complexity!
+            </div>
+
+            <div class="btn-group" style="margin-bottom:1rem">
+              <button class="btn btn-primary" id="addSimpleRuleBtn">Add Simple Rule</button>
+              <button class="btn btn-primary" id="addComplexRuleBtn">Add Complex Rule</button>
+              <button class="btn btn-secondary" id="addGroupBtn">Add Rule Group (AND/OR)</button>
+              <button class="btn btn-secondary" id="clearAllRulesBtn">Clear All</button>
+            </div>
+
+            <div id="rulesList" style="margin-top: 1rem; min-height: 100px;"></div>
+
+            <div style="margin-top:1.5rem">
+              <h3 style="font-size:1rem;font-weight:600;margin-bottom:0.75rem">Generated Code Preview</h3>
+              <pre id="visualCodePreview" style="background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:1rem;overflow-x:auto;font-size:0.8125rem;max-height:300px"></pre>
+            </div>
+
+            <div class="btn-group" style="margin-top:1rem">
+              <button class="btn btn-primary" id="applyVisualCodeBtn">Apply Code to Editor</button>
+              <button class="btn btn-secondary" id="testVisualBtn">Quick Test Visual</button>
+              <button class="btn btn-secondary" id="exportRulesJsonBtn">Export Rules JSON</button>
+              <button class="btn btn-secondary" id="importRulesJsonBtn">Import Rules JSON</button>
+            </div>
+          </div>
+
+          <div class="tab-content" id="params-tab">
+            <div class="info-box">
+              Define custom parameters for your strategy. These can be tuned during analysis
+              to find optimal configurations.
+            </div>
+
+            <button class="btn btn-secondary" id="addParamBtn">Add Parameter</button>
+            <div id="paramsList" style="margin-top: 1rem;"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Advanced Configuration</h2>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Memory Depth</label>
+            <input type="number" class="form-input" id="memoryDepth" value="0" min="0" max="100">
+            <small style="color: var(--text-secondary);">Number of previous rounds to consider (0 = unlimited)</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Error Handling</label>
+            <select class="form-select" id="errorHandling">
+              <option value="defect">Defect on error</option>
+              <option value="cooperate">Cooperate on error</option>
+              <option value="random">Random on error</option>
+              <option value="last">Repeat last move</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Timeout (ms)</label>
+            <input type="number" class="form-input" id="timeout" value="100" min="10" max="5000">
+            <small style="color: var(--text-secondary);">Maximum execution time per decision</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" id="description" placeholder="Describe your strategy..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Saved Strategies</h2>
+            <div class="panel-actions">
+              <button class="btn btn-secondary btn-sm" id="importBtn">Import</button>
+              <button class="btn btn-secondary btn-sm" id="exportAllBtn">Export All</button>
+            </div>
+          </div>
+
+          <div id="strategiesList"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Preset Strategies</h2>
+          </div>
+
+          <div id="presetsList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="fileInput" accept=".json" style="display: none;">
+
+  <script>
+    let codeEditorInstance;
+    let AppState = {
+      strategies: JSON.parse(localStorage.getItem('pd_strategies_v2') || '[]'),
+      currentStrategy: null,
+      presets: {
+        titForTat: {
+          name: '*****-for-Tat',
+          description: 'Cooperates first, then mimics opponent',
+          code: 'function strategy(myHistory, oppHistory, round) {\n  if (round === 1) return "C";\n  return oppHistory[oppHistory.length - 1] || "C";\n}'
+        },
+        alwaysCooperate: {
+          name: 'Always Cooperate',
+          description: 'Always cooperates',
+          code: 'function strategy(myHistory, oppHistory, round) {\n  return "C";\n}'
+        },
+        alwaysDefect: {
+          name: 'Always Defect',
+          description: 'Always defects',
+          code: 'function strategy(myHistory, oppHistory, round) {\n  return "D";\n}'
+        },
+        grimTrigger: {
+          name: 'Grim Trigger',
+          description: 'Cooperates until opponent defects once',
+          code: 'function strategy(myHistory, oppHistory, round) {\n  if (oppHistory.includes("D")) return "D";\n  return "C";\n}'
+        },
+        pavlov: {
+          name: 'Pavlov (Win-Stay, Lose-Shift)',
+          description: 'Changes if last round was mutually bad',
+          code: 'function strategy(myHistory, oppHistory, round) {\n  if (round === 1) return "C";\n  const lastMine = myHistory[myHistory.length - 1];\n  const lastOpp = oppHistory[oppHistory.length - 1];\n  if (lastMine === "C" && lastOpp === "C") return "C";\n  if (lastMine === "D" && lastOpp === "D") return "D";\n  return lastMine === "C" ? "D" : "C";\n}'
+        },
+        random: {
+          name: 'Random',
+          description: 'Randomly cooperates or defects',
+          code: 'function strategy(myHistory, oppHistory, round) {\n  return Math.random() < 0.5 ? "C" : "D";\n}'
+        },
+        generous: {
+          name: 'Generous *****-for-Tat',
+          description: '*****-for-Tat with 10% forgiveness',
+          code: 'function strategy(myHistory, oppHistory, round) {\n  if (round === 1) return "C";\n  const lastOpp = oppHistory[oppHistory.length - 1];\n  if (lastOpp === "D" && Math.random() < 0.1) return "C";\n  return lastOpp || "C";\n}'
+        },
+        suspicious: {
+          name: 'Suspicious *****-for-Tat',
+          description: 'Defects first, then mimics',
+          code: 'function strategy(myHistory, oppHistory, round) {\n  if (round === 1) return "D";\n  return oppHistory[oppHistory.length - 1] || "C";\n}'
+        }
+      }
+    };
+
+    // Initialize CodeMirror
+    window.addEventListener('DOMContentLoaded', () => {
+      codeEditorInstance = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+        mode: 'javascript',
+        theme: 'material-darker',
+        lineNumbers: true,
+        lineWrapping: true,
+        indentUnit: 2,
+        tabSize: 2
+      });
+
+      initializePage();
+    });
+
+    function initializePage() {
+      renderStrategiesList();
+      renderPresetsList();
+      setupEventListeners();
+    }
+
+    function setupEventListeners() {
+      // Tab switching
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.dataset.tab;
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById(tabName + '-tab').classList.add('active');
+        });
+      });
+
+      // Strategy actions
+      document.getElementById('newStrategyBtn').addEventListener('click', newStrategy);
+      document.getElementById('saveStrategyBtn').addEventListener('click', saveStrategy);
+      document.getElementById('validateCodeBtn').addEventListener('click', validateCode);
+      document.getElementById('testStrategyBtn').addEventListener('click', quickTest);
+      document.getElementById('importBtn').addEventListener('click', () => document.getElementById('fileInput').click());
+      document.getElementById('exportAllBtn').addEventListener('click', exportAll);
+      document.getElementById('fileInput').addEventListener('change', importStrategies);
+
+      // Parameter and rule management
+      document.getElementById('addParamBtn').addEventListener('click', addParameter);
+      
+      // Visual builder
+      document.getElementById('addSimpleRuleBtn').addEventListener('click', () => addVisualRule('simple'));
+      document.getElementById('addComplexRuleBtn').addEventListener('click', () => addVisualRule('complex'));
+      document.getElementById('addGroupBtn').addEventListener('click', addRuleGroup);
+      document.getElementById('clearAllRulesBtn').addEventListener('click', clearAllRules);
+      document.getElementById('applyVisualCodeBtn').addEventListener('click', applyVisualCode);
+      document.getElementById('testVisualBtn').addEventListener('click', testVisualStrategy);
+      document.getElementById('exportRulesJsonBtn').addEventListener('click', exportVisualRules);
+      document.getElementById('importRulesJsonBtn').addEventListener('click', importVisualRules);
+    }
+
+    function renderStrategiesList() {
+      const list = document.getElementById('strategiesList');
+      if (AppState.strategies.length === 0) {
+        list.innerHTML = '<div class="no-strategies">No strategies yet. Create your first strategy to get started.</div>';
+        return;
+      }
+
+      list.innerHTML = AppState.strategies.map((s, i) => `
+        <div class="strategy-card">
+          <div class="strategy-card-header">
+            <div>
+              <div class="strategy-name">${escapeHTML(s.name)}</div>
+              <div class="strategy-meta">Modified ${formatDate(s.modified)}</div>
+            </div>
+            <div class="strategy-actions">
+              <button class="btn btn-secondary btn-sm" onclick="window.loadStrategy(${i})">Load</button>
+              <button class="btn btn-secondary btn-sm" onclick="window.duplicateStrategy(${i})">Duplicate</button>
+              <button class="btn btn-danger btn-sm" onclick="window.deleteStrategy(${i})">Delete</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderPresetsList() {
+      const list = document.getElementById('presetsList');
+      list.innerHTML = Object.entries(AppState.presets).map(([key, preset]) => `
+        <div class="preset-item" onclick="window.loadPreset('${key}')">
+          <div class="preset-name">${preset.name}</div>
+          <div class="preset-description">${preset.description}</div>
+        </div>
+      `).join('');
+    }
+
+    function newStrategy() {
+      AppState.currentStrategy = null;
+      document.getElementById('strategyName').value = '';
+      document.getElementById('description').value = '';
+      document.getElementById('memoryDepth').value = '0';
+      document.getElementById('errorHandling').value = 'defect';
+      document.getElementById('timeout').value = '100';
+      codeEditorInstance.setValue('function strategy(myHistory, oppHistory, round, params) {\n  // Your strategy here\n  return "C";\n}');
+      document.getElementById('paramsList').innerHTML = '';
+      document.getElementById('rulesList').innerHTML = '';
+    }
+
+    function saveStrategy() {
+      const name = document.getElementById('strategyName').value.trim();
+      if (!name) {
+        showMessage('Please enter a strategy name', 'error');
+        return;
+      }
+
+      const code = codeEditorInstance.getValue();
+      if (!validateCodeSyntax(code)) {
+        showMessage('Code contains syntax errors', 'error');
+        return;
+      }
+
+      const strategy = {
+        name: name,
+        code: code,
+        description: document.getElementById('description').value,
+        memoryDepth: parseInt(document.getElementById('memoryDepth').value),
+        errorHandling: document.getElementById('errorHandling').value,
+        timeout: parseInt(document.getElementById('timeout').value),
+        params: collectParameters(),
+        created: AppState.currentStrategy !== null ? AppState.strategies[AppState.currentStrategy].created : Date.now(),
+        modified: Date.now()
+      };
+
+      if (AppState.currentStrategy !== null) {
+        AppState.strategies[AppState.currentStrategy] = strategy;
+      } else {
+        AppState.strategies.push(strategy);
+      }
+
+      localStorage.setItem('pd_strategies_v2', JSON.stringify(AppState.strategies));
+      renderStrategiesList();
+      showMessage('Strategy saved successfully', 'success');
+    }
+
+    window.loadStrategy = function(index) {
+      AppState.currentStrategy = index;
+      const s = AppState.strategies[index];
+      document.getElementById('strategyName').value = s.name;
+      document.getElementById('description').value = s.description || '';
+      document.getElementById('memoryDepth').value = s.memoryDepth || 0;
+      document.getElementById('errorHandling').value = s.errorHandling || 'defect';
+      document.getElementById('timeout').value = s.timeout || 100;
+      codeEditorInstance.setValue(s.code);
+      renderParameters(s.params || []);
+      showMessage('Strategy loaded', 'success');
+    }
+
+    window.loadPreset = function(key) {
+      const preset = AppState.presets[key];
+      AppState.currentStrategy = null;
+      document.getElementById('strategyName').value = preset.name;
+      codeEditorInstance.setValue(preset.code);
+      document.getElementById('description').value = preset.description;
+      showMessage('Preset loaded. Modify and save to create your own version.', 'info');
+    }
+
+    window.deleteStrategy = function(index) {
+      if (confirm('Are you sure you want to delete this strategy?')) {
+        AppState.strategies.splice(index, 1);
+        localStorage.setItem('pd_strategies_v2', JSON.stringify(AppState.strategies));
+        renderStrategiesList();
+        showMessage('Strategy deleted', 'success');
+        if (AppState.currentStrategy === index) {
+          newStrategy();
+        }
+      }
+    }
+
+    window.duplicateStrategy = function(index) {
+      const original = AppState.strategies[index];
+      const duplicate = {
+        ...original,
+        name: original.name + ' (Copy)',
+        created: Date.now(),
+        modified: Date.now()
+      };
+      AppState.strategies.push(duplicate);
+      localStorage.setItem('pd_strategies_v2', JSON.stringify(AppState.strategies));
+      renderStrategiesList();
+      showMessage('Strategy duplicated', 'success');
+    }
+
+    function validateCode() {
+      const code = codeEditorInstance.getValue();
+      if (validateCodeSyntax(code)) {
+        showMessage('Code syntax is valid', 'success');
+      } else {
+        showMessage('Code contains syntax errors', 'error');
+      }
+    }
+
+    function validateCodeSyntax(code) {
+      try {
+        new Function('return (' + code + ')')();
+        return true;
+      } catch (e) {
+        console.error(e);
+        return false;
+      }
+    }
+
+    async function quickTest() {
+      const code = codeEditorInstance.getValue();
+      if (!validateCodeSyntax(code)) {
+        showMessage('Fix syntax errors before testing', 'error');
+        return;
+      }
+
+      showMessage('Running quick tests against presets...', 'info');
+
+      try {
+        const results = [];
+        for (const [key, preset] of Object.entries(AppState.presets)) {
+          const result = await playMatch(code, preset.code, 100);
+          results.push(`${preset.name}: ${result.scores[0]} - ${result.scores[1]}`);
+        }
+        alert('Test Results:\n\n' + results.join('\n'));
+        showMessage('Tests completed', 'success');
+      } catch (e) {
+        showMessage('Test failed: ' + e.message, 'error');
+      }
+    }
+
+    async function playMatch(code1, code2, rounds) {
+      const worker1 = createStrategyFunction(code1);
+      const worker2 = createStrategyFunction(code2);
+      
+      const history1 = [];
+      const history2 = [];
+      const scores = [0, 0];
+
+      for (let round = 1; round <= rounds; round++) {
+        const move1 = worker1(history1, history2, round, {});
+        const move2 = worker2(history2, history1, round, {});
+
+        history1.push(move1);
+        history2.push(move2);
+
+        if (move1 === 'C' && move2 === 'C') {
+          scores[0] += 3;
+          scores[1] += 3;
+        } else if (move1 === 'C' && move2 === 'D') {
+          scores[0] += 0;
+          scores[1] += 5;
+        } else if (move1 === 'D' && move2 === 'C') {
+          scores[0] += 5;
+          scores[1] += 0;
+        } else {
+          scores[0] += 1;
+          scores[1] += 1;
+        }
+      }
+
+      return { scores, history: [history1, history2] };
+    }
+
+    function createStrategyFunction(code) {
+      return new Function('return (' + code + ')')();
+    }
+
+    function addParameter() {
+      const paramsList = document.getElementById('paramsList');
+      const paramId = 'param_' + Date.now();
+      const paramHTML = `
+        <div class="param-item" data-id="${paramId}">
+          <div class="param-header">
+            <input type="text" class="form-input param-name-input" placeholder="Parameter name" style="width: 200px;">
+            <button class="btn btn-danger btn-sm" onclick="window.removeParameter('${paramId}')">Remove</button>
+          </div>
+          <div class="param-controls">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Type</label>
+              <select class="form-select param-type-select">
+                <option value="number">Number</option>
+                <option value="boolean">Boolean</option>
+                <option value="string">String</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Default Value</label>
+              <input type="text" class="form-input param-default-input" placeholder="Default value">
+            </div>
+          </div>
+        </div>
+      `;
+      paramsList.insertAdjacentHTML('beforeend', paramHTML);
+    }
+
+    window.removeParameter = function(id) {
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if (el) el.remove();
+    }
+
+    function collectParameters() {
+      const params = [];
+      document.querySelectorAll('.param-item').forEach(item => {
+        const name = item.querySelector('.param-name-input').value;
+        const type = item.querySelector('.param-type-select').value;
+        const defaultValue = item.querySelector('.param-default-input').value;
+        if (name) {
+          params.push({ name, type, defaultValue });
+        }
+      });
+      return params;
+    }
+
+    function renderParameters(params) {
+      const paramsList = document.getElementById('paramsList');
+      paramsList.innerHTML = '';
+      params.forEach(param => {
+        const paramId = 'param_' + Date.now() + '_' + Math.random();
+        const paramHTML = `
+          <div class="param-item" data-id="${paramId}">
+            <div class="param-header">
+              <input type="text" class="form-input param-name-input" placeholder="Parameter name" value="${escapeHTML(param.name)}" style="width: 200px;">
+              <button class="btn btn-danger btn-sm" onclick="window.removeParameter('${paramId}')">Remove</button>
+            </div>
+            <div class="param-controls">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Type</label>
+                <select class="form-select param-type-select">
+                  <option value="number" ${param.type === 'number' ? 'selected' : ''}>Number</option>
+                  <option value="boolean" ${param.type === 'boolean' ? 'selected' : ''}>Boolean</option>
+                  <option value="string" ${param.type === 'string' ? 'selected' : ''}>String</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Default Value</label>
+                <input type="text" class="form-input param-default-input" placeholder="Default value" value="${escapeHTML(param.defaultValue)}">
+              </div>
+            </div>
+          </div>
+        `;
+        paramsList.insertAdjacentHTML('beforeend', paramHTML);
+      });
+    }
+
+    // ========== VISUAL BUILDER SYSTEM ==========
+    
+    let visualRules = [];
+    let ruleIdCounter = 0;
+
+    function addVisualRule(type = 'simple') {
+      const ruleId = ++ruleIdCounter;
+      const rule = {
+        id: ruleId,
+        type: type,
+        conditions: [createCondition()],
+        action: 'C',
+        logicOperator: 'AND'
+      };
+      
+      visualRules.push(rule);
+      renderVisualRules();
+      updateVisualCodePreview();
+    }
+
+    function createCondition() {
+      return {
+        id: Math.random().toString(36).substr(2, 9),
+        conditionType: 'round',
+        operator: '===',
+        value: '1',
+        subConditions: []
+      };
+    }
+
+    function addRuleGroup() {
+      const groupId = ++ruleIdCounter;
+      const group = {
+        id: groupId,
+        type: 'group',
+        groupLogic: 'AND',
+        rules: [],
+        action: 'C'
+      };
+      
+      visualRules.push(group);
+      renderVisualRules();
+      updateVisualCodePreview();
+    }
+
+    function renderVisualRules() {
+      const container = document.getElementById('rulesList');
+      
+      if (visualRules.length === 0) {
+        container.innerHTML = `
+          <div class="empty-rules">
+            <p>No rules yet. Add a rule to get started.</p>
+            <p style="font-size:0.875rem;margin-top:0.5rem">Rules are evaluated top-to-bottom. First match wins!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = visualRules.map((rule, index) => {
+        if (rule.type === 'group') {
+          return renderRuleGroup(rule, index);
+        } else {
+          return renderRule(rule, index);
+        }
+      }).join('');
+
+      // Add drag and drop
+      setupDragAndDrop();
+    }
+
+    function renderRule(rule, index) {
+      return `
+        <div class="rule-item" data-rule-id="${rule.id}" data-index="${index}" draggable="true">
+          <div class="rule-header">
+            <span class="rule-drag-handle">☰</span>
+            <span class="rule-title">Rule ${index + 1} ${rule.type === 'complex' ? '(Complex)' : ''}</span>
+            <div class="rule-actions">
+              <button class="btn btn-secondary btn-sm" onclick="window.duplicateRule(${rule.id})">Duplicate</button>
+              <button class="btn btn-danger btn-sm" onclick="window.deleteRule(${rule.id})">Delete</button>
+            </div>
+          </div>
+          
+          <div class="condition-builder">
+            <div style="margin-bottom:0.5rem;font-weight:500;font-size:0.875rem">
+              Conditions (${rule.logicOperator}):
+            </div>
+            ${rule.conditions.map((cond, i) => renderCondition(cond, rule.id, i)).join('')}
+            <button class="add-condition-btn" onclick="window.addConditionToRule(${rule.id})">
+              + Add Condition
+            </button>
+          </div>
+
+          <div class="action-selector">
+            <span class="action-label">Then:</span>
+            <select class="form-select mini" onchange="window.updateRuleAction(${rule.id}, this.value)" style="width:100px">
+              <option value="C" ${rule.action === 'C' ? 'selected' : ''}>Cooperate</option>
+              <option value="D" ${rule.action === 'D' ? 'selected' : ''}>Defect</option>
+              <option value="RANDOM" ${rule.action === 'RANDOM' ? 'selected' : ''}>Random</option>
+              <option value="MIRROR" ${rule.action === 'MIRROR' ? 'selected' : ''}>Mirror Last</option>
+            </select>
+            ${rule.action === 'RANDOM' ? '<input type="number" class="form-input mini" placeholder="Probability %" style="width:80px" value="50">' : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCondition(condition, ruleId, condIndex) {
+      const conditionTypes = {
+        'round': 'Round Number',
+        'myLastMove': 'My Last Move',
+        'oppLastMove': 'Opponent Last Move',
+        'myCoopRate': 'My Cooperation Rate',
+        'oppCoopRate': 'Opponent Cooperation Rate',
+        'consecutiveCoops': 'Consecutive Cooperations',
+        'consecutiveDefs': 'Consecutive Defections',
+        'oppPattern': 'Opponent Pattern',
+        'totalScore': 'My Total Score',
+        'oppTotalScore': 'Opponent Total Score',
+        'scoreDiff': 'Score Difference',
+        'historyLength': 'History Length',
+        'recentWindow': 'Recent Window Analysis'
+      };
+
+      const operators = {
+        '===': '=',
+        '!==': '≠',
+        '>': '>',
+        '<': '<',
+        '>=': '≥',
+        '<=': '≤',
+        'includes': 'Contains',
+        'startsWith': 'Starts With',
+        'endsWith': 'Ends With'
+      };
+
+      return `
+        <div class="condition-row">
+          ${condIndex > 0 ? `<span class="logic-operator">AND</span>` : '<span></span>'}
+          <select class="form-select mini" onchange="window.updateConditionType(${ruleId}, '${condition.id}', this.value)">
+            ${Object.entries(conditionTypes).map(([key, label]) => 
+              `<option value="${key}" ${condition.conditionType === key ? 'selected' : ''}>${label}</option>`
+            ).join('')}
+          </select>
+          <select class="form-select mini" onchange="window.updateConditionOperator(${ruleId}, '${condition.id}', this.value)">
+            ${Object.entries(operators).map(([key, label]) => 
+              `<option value="${key}" ${condition.operator === key ? 'selected' : ''}>${label}</option>`
+            ).join('')}
+          </select>
+          <input type="text" class="form-input mini" value="${condition.value}" 
+                 onchange="window.updateConditionValue(${ruleId}, '${condition.id}', this.value)"
+                 placeholder="Value">
+          <button class="btn btn-danger btn-sm" onclick="window.deleteCondition(${ruleId}, '${condition.id}')">×</button>
+        </div>
+      `;
+    }
+
+    function renderRuleGroup(group, index) {
+      return `
+        <div class="rule-group" data-rule-id="${group.id}" data-index="${index}">
+          <div class="group-header">
+            <div class="group-logic">
+              <span style="font-weight:600">Group ${index + 1}:</span>
+              <select class="form-select mini" onchange="window.updateGroupLogic(${group.id}, this.value)" style="width:80px">
+                <option value="AND" ${group.groupLogic === 'AND' ? 'selected' : ''}>AND</option>
+                <option value="OR" ${group.groupLogic === 'OR' ? 'selected' : ''}>OR</option>
+              </select>
+              <span style="font-size:0.875rem;color:var(--text-secondary)">all rules</span>
+            </div>
+            <div class="rule-actions">
+              <button class="btn btn-secondary btn-sm" onclick="window.addRuleToGroup(${group.id})">Add Rule</button>
+              <button class="btn btn-danger btn-sm" onclick="window.deleteRule(${group.id})">Delete Group</button>
+            </div>
+          </div>
+          <div class="nested-rules">
+            ${group.rules.length === 0 ? 
+              '<p style="color:var(--text-secondary);font-size:0.875rem">No rules in group. Add a rule to this group.</p>' :
+              group.rules.map((rule, i) => renderRule(rule, i)).join('')
+            }
+          </div>
+          <div class="action-selector">
+            <span class="action-label">If group matches, then:</span>
+            <select class="form-select mini" onchange="window.updateGroupAction(${group.id}, this.value)" style="width:100px">
+              <option value="C" ${group.action === 'C' ? 'selected' : ''}>Cooperate</option>
+              <option value="D" ${group.action === 'D' ? 'selected' : ''}>Defect</option>
+              <option value="RANDOM" ${group.action === 'RANDOM' ? 'selected' : ''}>Random</option>
+              <option value="MIRROR" ${group.action === 'MIRROR' ? 'selected' : ''}>Mirror Last</option>
+            </select>
+          </div>
+        </div>
+      `;
+    }
+
+    function setupDragAndDrop() {
+      const rules = document.querySelectorAll('.rule-item');
+      rules.forEach(rule => {
+        rule.addEventListener('dragstart', handleDragStart);
+        rule.addEventListener('dragover', handleDragOver);
+        rule.addEventListener('drop', handleDrop);
+        rule.addEventListener('dragend', handleDragEnd);
+      });
+    }
+
+    let draggedElement = null;
+
+    function handleDragStart(e) {
+      draggedElement = this;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/html', this.innerHTML);
+    }
+
+    function handleDragOver(e) {
+      if (e.preventDefault) e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      return false;
+    }
+
+    function handleDrop(e) {
+      if (e.stopPropagation) e.stopPropagation();
+      
+      if (draggedElement !== this) {
+        const draggedIndex = parseInt(draggedElement.dataset.index);
+        const targetIndex = parseInt(this.dataset.index);
+        
+        const temp = visualRules[draggedIndex];
+        visualRules.splice(draggedIndex, 1);
+        visualRules.splice(targetIndex, 0, temp);
+        
+        renderVisualRules();
+        updateVisualCodePreview();
+      }
+      
+      return false;
+    }
+
+    function handleDragEnd(e) {
+      this.classList.remove('dragging');
+    }
+
+    // Window-accessible functions for inline handlers
+    window.addConditionToRule = function(ruleId) {
+      const rule = findRuleById(ruleId);
+      if (rule) {
+        rule.conditions.push(createCondition());
+        renderVisualRules();
+        updateVisualCodePreview();
+      }
+    };
+
+    window.deleteCondition = function(ruleId, conditionId) {
+      const rule = findRuleById(ruleId);
+      if (rule) {
+        rule.conditions = rule.conditions.filter(c => c.id !== conditionId);
+        if (rule.conditions.length === 0) {
+          rule.conditions.push(createCondition());
+        }
+        renderVisualRules();
+        updateVisualCodePreview();
+      }
+    };
+
+    window.updateConditionType = function(ruleId, conditionId, type) {
+      const rule = findRuleById(ruleId);
+      if (rule) {
+        const condition = rule.conditions.find(c => c.id === conditionId);
+        if (condition) {
+          condition.conditionType = type;
+          updateVisualCodePreview();
+        }
+      }
+    };
+
+    window.updateConditionOperator = function(ruleId, conditionId, operator) {
+      const rule = findRuleById(ruleId);
+      if (rule) {
+        const condition = rule.conditions.find(c => c.id === conditionId);
+        if (condition) {
+          condition.operator = operator;
+          updateVisualCodePreview();
+        }
+      }
+    };
+
+    window.updateConditionValue = function(ruleId, conditionId, value) {
+      const rule = findRuleById(ruleId);
+      if (rule) {
+        const condition = rule.conditions.find(c => c.id === conditionId);
+        if (condition) {
+          condition.value = value;
+          updateVisualCodePreview();
+        }
+      }
+    };
+
+    window.updateRuleAction = function(ruleId, action) {
+      const rule = findRuleById(ruleId);
+      if (rule) {
+        rule.action = action;
+        updateVisualCodePreview();
+        renderVisualRules();
+      }
+    };
+
+    window.deleteRule = function(ruleId) {
+      visualRules = visualRules.filter(r => r.id !== ruleId);
+      renderVisualRules();
+      updateVisualCodePreview();
+    };
+
+    window.duplicateRule = function(ruleId) {
+      const rule = findRuleById(ruleId);
+      if (rule) {
+        const duplicate = JSON.parse(JSON.stringify(rule));
+        duplicate.id = ++ruleIdCounter;
+        visualRules.push(duplicate);
+        renderVisualRules();
+        updateVisualCodePreview();
+      }
+    };
+
+    window.updateGroupLogic = function(groupId, logic) {
+      const group = findRuleById(groupId);
+      if (group) {
+        group.groupLogic = logic;
+        updateVisualCodePreview();
+      }
+    };
+
+    window.addRuleToGroup = function(groupId) {
+      const group = findRuleById(groupId);
+      if (group) {
+        const rule = {
+          id: ++ruleIdCounter,
+          type: 'simple',
+          conditions: [createCondition()],
+          action: 'C',
+          logicOperator: 'AND'
+        };
+        group.rules.push(rule);
+        renderVisualRules();
+        updateVisualCodePreview();
+      }
+    };
+
+    window.updateGroupAction = function(groupId, action) {
+      const group = findRuleById(groupId);
+      if (group) {
+        group.action = action;
+        updateVisualCodePreview();
+      }
+    };
+
+    function findRuleById(ruleId) {
+      for (const rule of visualRules) {
+        if (rule.id === ruleId) return rule;
+        if (rule.type === 'group' && rule.rules) {
+          const found = rule.rules.find(r => r.id === ruleId);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+
+    function clearAllRules() {
+      if (confirm('Clear all rules?')) {
+        visualRules = [];
+        renderVisualRules();
+        updateVisualCodePreview();
+      }
+    }
+
+    function updateVisualCodePreview() {
+      const code = generateCodeFromRules();
+      document.getElementById('visualCodePreview').textContent = code;
+    }
+
+    function generateCodeFromRules() {
+      if (visualRules.length === 0) {
+        return 'function strategy(myHistory, oppHistory, round, params) {\n  // Add rules to generate code\n  return "C";\n}';
+      }
+
+      let code = 'function strategy(myHistory, oppHistory, round, params) {\n';
+      code += '  // Auto-generated from visual rules\n\n';
+      
+      visualRules.forEach((rule, index) => {
+        if (rule.type === 'group') {
+          code += generateGroupCode(rule, index);
+        } else {
+          code += generateRuleCode(rule, index);
+        }
+      });
+
+      code += '\n  // Default fallback\n';
+      code += '  return "C";\n';
+      code += '}';
+
+      return code;
+    }
+
+    function generateRuleCode(rule, index) {
+      let code = '';
+      const indent = '  ';
+      
+      if (rule.conditions.length === 0) return code;
+
+      code += indent + '// Rule ' + (index + 1) + '\n';
+      code += indent + 'if (';
+      
+      const conditions = rule.conditions.map(c => generateConditionCode(c)).join(' && ');
+      code += conditions;
+      code += ') {\n';
+      code += indent + '  return "' + (rule.action === 'MIRROR' ? '" + (oppHistory[oppHistory.length - 1] || "C") + "' : rule.action === 'RANDOM' ? '" + (Math.random() < 0.5 ? "C" : "D") + "' : rule.action) + '";\n';
+      code += indent + '}\n\n';
+
+      return code;
+    }
+
+    function generateConditionCode(condition) {
+      const type = condition.conditionType;
+      const op = condition.operator;
+      const val = condition.value;
+
+      switch (type) {
+        case 'round':
+          return `round ${op} ${val}`;
+        case 'myLastMove':
+          return `myHistory[myHistory.length - 1] ${op} "${val}"`;
+        case 'oppLastMove':
+          return `oppHistory[oppHistory.length - 1] ${op} "${val}"`;
+        case 'myCoopRate':
+          return `(myHistory.filter(m => m === "C").length / myHistory.length) ${op} ${parseFloat(val)}`;
+        case 'oppCoopRate':
+          return `(oppHistory.filter(m => m === "C").length / oppHistory.length) ${op} ${parseFloat(val)}`;
+        case 'consecutiveCoops':
+          return `oppHistory.slice(-${val}).every(m => m === "C")`;
+        case 'consecutiveDefs':
+          return `oppHistory.slice(-${val}).every(m => m === "D")`;
+        case 'oppPattern':
+          return `oppHistory.slice(-${val.length}).join("") === "${val}"`;
+        case 'totalScore':
+          return `calculateScore(myHistory, oppHistory) ${op} ${val}`;
+        case 'historyLength':
+          return `myHistory.length ${op} ${val}`;
+        default:
+          return 'true';
+      }
+    }
+
+    function generateGroupCode(group, index) {
+      let code = '';
+      const indent = '  ';
+      
+      code += indent + '// Rule Group ' + (index + 1) + ' (' + group.groupLogic + ')\n';
+      code += indent + 'if (';
+      
+      const logic = group.groupLogic === 'AND' ? ' && ' : ' || ';
+      const groupConditions = group.rules.map(rule => {
+        if (rule.conditions.length === 0) return 'true';
+        return '(' + rule.conditions.map(c => generateConditionCode(c)).join(' && ') + ')';
+      }).join(logic);
+      
+      code += groupConditions || 'false';
+      code += ') {\n';
+      code += indent + '  return "' + (group.action === 'MIRROR' ? '" + (oppHistory[oppHistory.length - 1] || "C") + "' : group.action === 'RANDOM' ? '" + (Math.random() < 0.5 ? "C" : "D") + "' : group.action) + '";\n';
+      code += indent + '}\n\n';
+
+      return code;
+    }
+
+    function applyVisualCode() {
+      const code = generateCodeFromRules();
+      codeEditorInstance.setValue(code);
+      showMessage('Visual rules applied to code editor', 'success');
+      
+      // Switch to code tab
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector('[data-tab="code"]').classList.add('active');
+      document.getElementById('code-tab').classList.add('active');
+    }
+
+    async function testVisualStrategy() {
+      const code = generateCodeFromRules();
+      if (!validateCodeSyntax(code)) {
+        showMessage('Generated code has errors', 'error');
+        return;
+      }
+
+      showMessage('Running quick tests...', 'info');
+
+      try {
+        const results = [];
+        for (const [key, preset] of Object.entries(AppState.presets)) {
+          const result = await playMatch(code, preset.code, 100);
+          results.push(`${preset.name}: ${result.scores[0]} - ${result.scores[1]}`);
+        }
+        alert('Visual Strategy Test Results:\n\n' + results.join('\n'));
+        showMessage('Tests completed', 'success');
+      } catch (e) {
+        showMessage('Test failed: ' + e.message, 'error');
+      }
+    }
+
+    function exportVisualRules() {
+      const data = JSON.stringify(visualRules, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'visual_rules.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showMessage('Rules exported', 'success');
+    }
+
+    function importVisualRules() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            visualRules = data;
+            ruleIdCounter = Math.max(...visualRules.map(r => r.id), 0);
+            renderVisualRules();
+            updateVisualCodePreview();
+            showMessage('Rules imported successfully', 'success');
+          } catch (err) {
+            showMessage('Failed to import: ' + err.message, 'error');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+
+    // Initialize visual builder
+    renderVisualRules();
+    updateVisualCodePreview();
+
+    // ========== END VISUAL BUILDER SYSTEM ==========
+
+
+    function importStrategies(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target.result);
+          if (Array.isArray(data)) {
+            AppState.strategies = AppState.strategies.concat(data);
+          } else if (data.strategies) {
+            AppState.strategies = AppState.strategies.concat(data.strategies);
+          } else {
+            AppState.strategies.push(data);
+          }
+          localStorage.setItem('pd_strategies_v2', JSON.stringify(AppState.strategies));
+          renderStrategiesList();
+          showMessage('Strategies imported successfully', 'success');
+        } catch (err) {
+          showMessage('Failed to import: ' + err.message, 'error');
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    function exportAll() {
+      const data = JSON.stringify(AppState.strategies, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'strategies_export.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showMessage('Strategies exported', 'success');
+    }
+
+    function showMessage(message, type) {
+      const statusDiv = document.getElementById('codeStatus');
+      statusDiv.className = type + '-box';
+      statusDiv.textContent = message;
+      statusDiv.style.display = 'block';
+      setTimeout(() => {
+        statusDiv.style.display = 'none';
+      }, 5000);
+    }
+
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function formatDate(timestamp) {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diff = now - date;
+      const minutes = Math.floor(diff / 60000);
+      if (minutes < 1) return 'just now';
+      if (minutes < 60) return minutes + ' minutes ago';
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return hours + ' hours ago';
+      const days = Math.floor(hours / 24);
+      if (days < 30) return days + ' days ago';
+      return date.toLocaleDateString();
+    }
+  </script>
+</body>
+</html>
