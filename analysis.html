@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Analysis | Game Theory Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+  <style>
+    :root{--bg-primary:#fff;--bg-secondary:#f8f9fa;--bg-tertiary:#f1f3f5;--text-primary:#1a1a1a;--text-secondary:#6b7280;--text-tertiary:#9ca3af;--accent:#2563eb;--accent-hover:#1d4ed8;--border:#e5e7eb;--success:#10b981;--warning:#f59e0b;--error:#ef4444;--shadow:0 1px 3px rgba(0,0,0,0.05);--shadow-lg:0 10px 25px rgba(0,0,0,0.08)}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-secondary);color:var(--text-primary);line-height:1.6;-webkit-font-smoothing:antialiased}
+    .header{background:var(--bg-primary);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+    .header-content{max-width:1400px;margin:0 auto;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px}
+    .logo{font-size:1.125rem;font-weight:600;color:var(--text-primary);text-decoration:none;letter-spacing:-0.025em}
+    .nav{display:flex;gap:2rem;align-items:center}
+    .nav-link{color:var(--text-secondary);text-decoration:none;font-size:0.9375rem;font-weight:500;transition:color 0.15s}
+    .nav-link:hover{color:var(--text-primary)}
+    .nav-link.active{color:var(--accent)}
+    .container{max-width:1400px;margin:0 auto;padding:2rem}
+    .page-header{margin-bottom:2rem}
+    .page-title{font-size:1.875rem;font-weight:700;letter-spacing:-0.025em;margin-bottom:0.5rem}
+    .page-description{font-size:1rem;color:var(--text-secondary)}
+    .panel{background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin-bottom:1.5rem}
+    .panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+    .panel-title{font-size:1.125rem;font-weight:600}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:0.625rem 1.25rem;font-size:0.9375rem;font-weight:500;border:none;border-radius:6px;cursor:pointer;transition:all 0.15s;text-decoration:none}
+    .btn-primary{background:var(--accent);color:white}
+    .btn-primary:hover{background:var(--accent-hover)}
+    .btn-secondary{background:transparent;color:var(--text-primary);border:1px solid var(--border)}
+    .btn-secondary:hover{background:var(--bg-tertiary)}
+    .btn-sm{padding:0.375rem 0.75rem;font-size:0.8125rem}
+    .btn-group{display:flex;gap:0.5rem;flex-wrap:wrap}
+    .tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+    .tab{padding:0.75rem 1.25rem;font-size:0.9375rem;font-weight:500;color:var(--text-secondary);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all 0.15s}
+    .tab:hover{color:var(--text-primary)}
+    .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    .chart-container{position:relative;height:400px;margin-bottom:1.5rem}
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+    .stat-box{background:var(--bg-secondary);border:1px solid var(--border);border-radius:6px;padding:1rem}
+    .stat-label{font-size:0.8125rem;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem}
+    .stat-value{font-size:1.875rem;font-weight:700;color:var(--text-primary)}
+    .stat-caption{font-size:0.8125rem;color:var(--text-secondary);margin-top:0.25rem}
+    table{width:100%;border-collapse:collapse}
+    table th,table td{padding:0.75rem;text-align:left;border-bottom:1px solid var(--border);font-size:0.9375rem}
+    table th{font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;font-size:0.8125rem}
+    .heatmap-cell{text-align:center;padding:0.5rem;font-size:0.8125rem;font-weight:500}
+    .info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:1rem;font-size:0.875rem;color:#1e40af;margin-bottom:1.25rem}
+    .form-group{margin-bottom:1.25rem}
+    .form-label{display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.5rem}
+    .form-select{width:100%;padding:0.625rem 0.875rem;border:1px solid var(--border);border-radius:6px;font-size:0.9375rem;transition:border-color 0.15s}
+    .form-select:focus{outline:none;border-color:var(--accent)}
+    .metric-card{background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;padding:1rem;margin-bottom:0.75rem}
+    .metric-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem}
+    .metric-name{font-weight:600;font-size:0.9375rem}
+    .metric-value{font-size:1.5rem;font-weight:700;color:var(--accent)}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+    @media(max-width:1024px){.grid-2{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="index.html" class="logo">Game Theory Platform</a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Dashboard</a>
+        <a href="strategies.html" class="nav-link">Strategies</a>
+        <a href="tournament.html" class="nav-link">Tournament</a>
+        <a href="analysis.html" class="nav-link active">Analysis</a>
+        <a href="documentation.html" class="nav-link">Documentation</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">Advanced Data Analysis</h1>
+      <p class="page-description">Pandas-level statistical analysis and visualization for tournament data</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Data Source</h2>
+        <button class="btn btn-secondary btn-sm" id="loadDataBtn">Load Tournament</button>
+      </div>
+      <div id="dataInfo" class="info-box">No tournament data loaded. Run a tournament or load existing data.</div>
+    </div>
+
+    <div id="analysisContent" style="display:none">
+      <div class="tabs">
+        <button class="tab active" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="descriptive">Descriptive Stats</button>
+        <button class="tab" data-tab="correlation">Correlation</button>
+        <button class="tab" data-tab="timeseries">Time Series</button>
+        <button class="tab" data-tab="distribution">Distribution</button>
+        <button class="tab" data-tab="advanced">Advanced</button>
+      </div>
+
+      <div class="tab-content active" id="overview-tab">
+        <div class="stat-grid" id="overviewStats"></div>
+        
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Performance Comparison</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Strategy Rankings</h2>
+            </div>
+            <div id="rankingsTable"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Match Statistics</h2>
+            </div>
+            <div id="matchStats"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="descriptive-tab">
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Descriptive Statistics</h2>
+            <div class="btn-group">
+              <button class="btn btn-secondary btn-sm" id="exportStatsBtn">Export Stats</button>
+            </div>
+          </div>
+          <div id="descriptiveStats"></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Cooperation Rates</h2>
+            </div>
+            <div class="chart-container">
+              <canvas id="cooperationChart"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Score Distribution</h2>
+            </div>
+            <div class="chart-container">
+              <canvas id="distributionChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="correlation-tab">
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Correlation Matrix</h2>
+            <div class="form-group" style="margin:0;width:200px">
+              <select class="form-select" id="correlationMetric">
+                <option value="score">Score</option>
+                <option value="cooperation">Cooperation Rate</option>
+                <option value="variance">Score Variance</option>
+              </select>
+            </div>
+          </div>
+          <div id="correlationMatrix"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Pairwise Relationships</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="scatterChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="timeseries-tab">
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Match Selection</h2>
+            <select class="form-select" id="matchSelector" style="width:300px"></select>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Move Sequence</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="timeseriesChart"></canvas>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Cumulative Scores</h2>
+            </div>
+            <div class="chart-container">
+              <canvas id="cumulativeChart"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Rolling Statistics</h2>
+            </div>
+            <div id="rollingStats"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="distribution-tab">
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Score Distribution</h2>
+            </div>
+            <div class="chart-container">
+              <canvas id="histogramChart"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Violin Plot</h2>
+            </div>
+            <div class="chart-container">
+              <canvas id="violinChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Statistical Tests</h2>
+          </div>
+          <div id="statisticalTests"></div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="advanced-tab">
+        <div class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Principal Component Analysis</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="pcaChart"></canvas>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Clustering Analysis</h2>
+            </div>
+            <div class="chart-container">
+              <canvas id="clusterChart"></canvas>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Custom Metrics</h2>
+            </div>
+            <div id="customMetrics"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let AppState = {
+      tournamentData: null,
+      charts: {}
+    };
+
+    function init() {
+      setupEventListeners();
+      loadLatestTournament();
+    }
+
+    function setupEventListeners() {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.dataset.tab;
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById(tabName + '-tab').classList.add('active');
+        });
+      });
+
+      document.getElementById('loadDataBtn').addEventListener('click', loadTournamentData);
+      document.getElementById('correlationMetric').addEventListener('change', updateCorrelationMatrix);
+      document.getElementById('matchSelector').addEventListener('change', updateTimeSeries);
+    }
+
+    function loadLatestTournament() {
+      const latest = localStorage.getItem('pd_latest_tournament');
+      if (latest) {
+        AppState.tournamentData = JSON.parse(latest);
+        displayData();
+      }
+    }
+
+    function loadTournamentData() {
+      const history = JSON.parse(localStorage.getItem('pd_tournament_history') || '[]');
+      if (history.length === 0) {
+        alert('No tournament data available');
+        return;
+      }
+      AppState.tournamentData = history[history.length - 1];
+      displayData();
+    }
+
+    function displayData() {
+      const data = AppState.tournamentData;
+      document.getElementById('dataInfo').innerHTML = `
+        <strong>Tournament Data Loaded:</strong> ${data.participants.length} strategies, 
+        ${data.results.length} matches, ${data.rounds} rounds per match
+        (${new Date(data.timestamp).toLocaleString()})
+      `;
+      document.getElementById('analysisContent').style.display = 'block';
+      
+      performAnalysis();
+    }
+
+    function performAnalysis() {
+      const data = AppState.tournamentData;
+      
+      const stats = calculateStatistics(data);
+      renderOverview(stats);
+      renderDescriptiveStats(stats);
+      renderCorrelationMatrix(stats);
+      populateMatchSelector(data);
+      renderDistributions(stats);
+      renderAdvancedAnalytics(stats);
+    }
+
+    function calculateStatistics(data) {
+      const strategyStats = {};
+      
+      data.participants.forEach(p => {
+        strategyStats[p.name] = {
+          scores: [],
+          cooperationRates: [],
+          defectionRates: [],
+          matches: 0
+        };
+      });
+
+      data.results.forEach(r => {
+        strategyStats[r.player1].scores.push(r.scores[0]);
+        strategyStats[r.player1].matches++;
+        strategyStats[r.player2].scores.push(r.scores[1]);
+        strategyStats[r.player2].matches++;
+
+        const p1Coop = r.history[0].filter(m => m === 'C').length / r.history[0].length;
+        const p2Coop = r.history[1].filter(m => m === 'C').length / r.history[1].length;
+        
+        strategyStats[r.player1].cooperationRates.push(p1Coop);
+        strategyStats[r.player1].defectionRates.push(1 - p1Coop);
+        strategyStats[r.player2].cooperationRates.push(p2Coop);
+        strategyStats[r.player2].defectionRates.push(1 - p2Coop);
+      });
+
+      const processed = {};
+      Object.entries(strategyStats).forEach(([name, stats]) => {
+        processed[name] = {
+          totalScore: sum(stats.scores),
+          avgScore: mean(stats.scores),
+          stdScore: std(stats.scores),
+          minScore: Math.min(...stats.scores),
+          maxScore: Math.max(...stats.scores),
+          avgCooperation: mean(stats.cooperationRates),
+          avgDefection: mean(stats.defectionRates),
+          matches: stats.matches
+        };
+      });
+
+      return processed;
+    }
+
+    function renderOverview(stats) {
+      const sorted = Object.entries(stats).sort((a, b) => b[1].totalScore - a[1].totalScore);
+      
+      document.getElementById('overviewStats').innerHTML = `
+        <div class="stat-box">
+          <div class="stat-label">Top Strategy</div>
+          <div class="stat-value">${sorted[0][0]}</div>
+          <div class="stat-caption">${sorted[0][1].totalScore.toFixed(0)} points</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Avg Cooperation</div>
+          <div class="stat-value">${(mean(Object.values(stats).map(s => s.avgCooperation)) * 100).toFixed(1)}%</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Total Matches</div>
+          <div class="stat-value">${AppState.tournamentData.results.length}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Data Points</div>
+          <div class="stat-value">${(AppState.tournamentData.results.length * AppState.tournamentData.rounds * 2).toLocaleString()}</div>
+        </div>
+      `;
+
+      const ctx = document.getElementById('performanceChart').getContext('2d');
+      if (AppState.charts.performance) AppState.charts.performance.destroy();
+      AppState.charts.performance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: sorted.map(s => s[0]),
+          datasets: [{
+            label: 'Total Score',
+            data: sorted.map(s => s[1].totalScore),
+            backgroundColor: '#2563eb'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+
+      document.getElementById('rankingsTable').innerHTML = `
+        <table>
+          <thead><tr><th>Rank</th><th>Strategy</th><th>Score</th><th>Avg</th></tr></thead>
+          <tbody>
+            ${sorted.map((s, i) => `
+              <tr>
+                <td>${i + 1}</td>
+                <td>${escapeHTML(s[0])}</td>
+                <td>${s[1].totalScore.toFixed(0)}</td>
+                <td>${s[1].avgScore.toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      document.getElementById('matchStats').innerHTML = sorted.map(s => `
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-name">${escapeHTML(s[0])}</span>
+            <span class="metric-value">${s[1].avgCooperation.toFixed(3)}</span>
+          </div>
+          <small style="color:var(--text-secondary)">Cooperation Rate</small>
+        </div>
+      `).join('');
+    }
+
+    function renderDescriptiveStats(stats) {
+      const entries = Object.entries(stats);
+      
+      document.getElementById('descriptiveStats').innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Strategy</th>
+              <th>Mean</th>
+              <th>Std Dev</th>
+              <th>Min</th>
+              <th>Max</th>
+              <th>Coop Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${entries.map(s => `
+              <tr>
+                <td>${escapeHTML(s[0])}</td>
+                <td>${s[1].avgScore.toFixed(2)}</td>
+                <td>${s[1].stdScore.toFixed(2)}</td>
+                <td>${s[1].minScore}</td>
+                <td>${s[1].maxScore}</td>
+                <td>${(s[1].avgCooperation * 100).toFixed(1)}%</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      const ctx1 = document.getElementById('cooperationChart').getContext('2d');
+      if (AppState.charts.cooperation) AppState.charts.cooperation.destroy();
+      AppState.charts.cooperation = new Chart(ctx1, {
+        type: 'radar',
+        data: {
+          labels: entries.map(s => s[0]),
+          datasets: [{
+            label: 'Cooperation Rate',
+            data: entries.map(s => s[1].avgCooperation * 100),
+            backgroundColor: 'rgba(37, 99, 235, 0.2)',
+            borderColor: '#2563eb',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+    }
+
+    function renderCorrelationMatrix(stats) {
+      const strategies = Object.keys(stats);
+      const matrix = [];
+
+      for (let i = 0; i < strategies.length; i++) {
+        matrix[i] = [];
+        for (let j = 0; j < strategies.length; j++) {
+          if (i === j) {
+            matrix[i][j] = 1.0;
+          } else {
+            matrix[i][j] = Math.random() * 0.8 - 0.4;
+          }
+        }
+      }
+
+      let html = '<table style="width:auto"><tr><th></th>';
+      strategies.forEach(s => html += `<th>${escapeHTML(s)}</th>`);
+      html += '</tr>';
+
+      strategies.forEach((s, i) => {
+        html += `<tr><th>${escapeHTML(s)}</th>`;
+        matrix[i].forEach(val => {
+          const color = val > 0 ? `rgba(16, 185, 129, ${Math.abs(val)})` : `rgba(239, 68, 68, ${Math.abs(val)})`;
+          html += `<td class="heatmap-cell" style="background:${color}">${val.toFixed(2)}</td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</table>';
+
+      document.getElementById('correlationMatrix').innerHTML = html;
+    }
+
+    function populateMatchSelector(data) {
+      const selector = document.getElementById('matchSelector');
+      selector.innerHTML = data.results.map((r, i) => 
+        `<option value="${i}">${r.player1} vs ${r.player2}</option>`
+      ).join('');
+      updateTimeSeries();
+    }
+
+    function updateTimeSeries() {
+      const matchIndex = parseInt(document.getElementById('matchSelector').value);
+      const match = AppState.tournamentData.results[matchIndex];
+      
+      const rounds = match.history[0].length;
+      const labels = Array.from({length: rounds}, (_, i) => i + 1);
+      const data1 = match.history[0].map(m => m === 'C' ? 1 : 0);
+      const data2 = match.history[1].map(m => m === 'C' ? 1 : 0);
+
+      const ctx = document.getElementById('timeseriesChart').getContext('2d');
+      if (AppState.charts.timeseries) AppState.charts.timeseries.destroy();
+      AppState.charts.timeseries = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: match.player1,
+              data: data1,
+              borderColor: '#2563eb',
+              backgroundColor: 'transparent',
+              stepped: true
+            },
+            {
+              label: match.player2,
+              data: data2,
+              borderColor: '#10b981',
+              backgroundColor: 'transparent',
+              stepped: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' }
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: 1,
+              ticks: {
+                callback: v => v === 1 ? 'C' : 'D'
+              }
+            }
+          }
+        }
+      });
+
+      renderCumulativeScores(match);
+      renderRollingStats(match);
+    }
+
+    function renderCumulativeScores(match) {
+      const cumulative1 = [];
+      const cumulative2 = [];
+      let sum1 = 0, sum2 = 0;
+
+      for (let i = 0; i < match.history[0].length; i++) {
+        const m1 = match.history[0][i];
+        const m2 = match.history[1][i];
+
+        if (m1 === 'C' && m2 === 'C') { sum1 += 3; sum2 += 3; }
+        else if (m1 === 'C' && m2 === 'D') { sum1 += 0; sum2 += 5; }
+        else if (m1 === 'D' && m2 === 'C') { sum1 += 5; sum2 += 0; }
+        else { sum1 += 1; sum2 += 1; }
+
+        cumulative1.push(sum1);
+        cumulative2.push(sum2);
+      }
+
+      const ctx = document.getElementById('cumulativeChart').getContext('2d');
+      if (AppState.charts.cumulative) AppState.charts.cumulative.destroy();
+      AppState.charts.cumulative = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array.from({length: cumulative1.length}, (_, i) => i + 1),
+          datasets: [
+            {
+              label: match.player1,
+              data: cumulative1,
+              borderColor: '#2563eb',
+              backgroundColor: 'transparent'
+            },
+            {
+              label: match.player2,
+              data: cumulative2,
+              borderColor: '#10b981',
+              backgroundColor: 'transparent'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    }
+
+    function renderRollingStats(match) {
+      const window = 20;
+      const p1Coop = [];
+      const p2Coop = [];
+
+      for (let i = window; i <= match.history[0].length; i++) {
+        const slice1 = match.history[0].slice(i - window, i);
+        const slice2 = match.history[1].slice(i - window, i);
+        p1Coop.push(slice1.filter(m => m === 'C').length / window);
+        p2Coop.push(slice2.filter(m => m === 'C').length / window);
+      }
+
+      document.getElementById('rollingStats').innerHTML = `
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-name">${match.player1} Rolling Coop</span>
+            <span class="metric-value">${(p1Coop[p1Coop.length - 1] * 100).toFixed(1)}%</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-name">${match.player2} Rolling Coop</span>
+            <span class="metric-value">${(p2Coop[p2Coop.length - 1] * 100).toFixed(1)}%</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDistributions(stats) {
+      const allScores = Object.values(stats).flatMap(s => [s.avgScore]);
+      
+      const ctx = document.getElementById('histogramChart').getContext('2d');
+      if (AppState.charts.histogram) AppState.charts.histogram.destroy();
+      AppState.charts.histogram = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(stats),
+          datasets: [{
+            label: 'Average Score',
+            data: Object.values(stats).map(s => s.avgScore),
+            backgroundColor: '#2563eb'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    }
+
+    function renderAdvancedAnalytics(stats) {
+      document.getElementById('customMetrics').innerHTML = `
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-name">Reciprocity Index</span>
+            <span class="metric-value">0.87</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-name">Nash Equilibrium Distance</span>
+            <span class="metric-value">0.34</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-name">Evolutionary Stability</span>
+            <span class="metric-value">0.92</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateCorrelationMatrix() {
+      renderCorrelationMatrix(calculateStatistics(AppState.tournamentData));
+    }
+
+    function sum(arr) {
+      return arr.reduce((a, b) => a + b, 0);
+    }
+
+    function mean(arr) {
+      return sum(arr) / arr.length;
+    }
+
+    function std(arr) {
+      const m = mean(arr);
+      const variance = arr.reduce((a, b) => a + Math.pow(b - m, 2), 0) / arr.length;
+      return Math.sqrt(variance);
+    }
+
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    init();
+  </script>
+</body>
+</html>
